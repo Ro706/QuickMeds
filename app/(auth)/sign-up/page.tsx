@@ -1,66 +1,103 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import FloatingMedicines from "@/components/FloatingMedicines";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Label } from "@/components/ui/label";
 
-export default function SignUp() {
-  const router = useRouter();
+export default function SignUpPage() {
+  const formRef = useRef<HTMLDivElement>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    gsap.from(formRef.current, {
+      x: -120,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out",
+    });
+  }, []);
+
   const handleSignup = async () => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Signup successful");
-      router.push("/Home");
-    } else {
-      alert(data.error);
-    }
+    if (res.ok) window.location.href = "/signin";
+    else alert("Signup failed");
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="space-y-4 w-80">
-        <h1 className="text-2xl font-bold">Sign Up</h1>
+    <div className="min-h-screen flex">
 
-        <Input
-          placeholder="Name"
-          onChange={(e) => setName(e.target.value)}
-        />
+      {/* LEFT — Form */}
+      <div className="flex w-full md:w-1/2 items-center justify-center bg-background">
 
-        <Input
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <Card ref={formRef} className="w-[380px] shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">
+              Create Account
+            </CardTitle>
+          </CardHeader>
 
-        <Input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <CardContent className="space-y-4">
 
-        <Button className="w-full" onClick={handleSignup}>
-          Create Account
-        </Button>
-         <p className="text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link
-            href="/sign-in"
-            className="text-primary underline"
-          >
-            Sign In
-          </Link>
-        </p>
+            <div>
+              <Label>Name</Label>
+              <Input
+                placeholder="Your name"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label>Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <Button
+              onClick={handleSignup}
+              className="w-full"
+            >
+              Sign Up
+            </Button>
+
+            <p className="text-sm text-center">
+              Already have an account?{" "}
+              <a href="/sign-in" className="underline">
+                Sign in
+              </a>
+            </p>
+
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* RIGHT — Animation */}
+      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-teal-500 to-green-600">
+        <FloatingMedicines />
       </div>
     </div>
   );

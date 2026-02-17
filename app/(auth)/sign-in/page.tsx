@@ -1,59 +1,94 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import FloatingMedicines from "@/components/FloatingMedicines";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Label } from "@/components/ui/label";
 
-export default function SignIn() {
-  const router = useRouter();
+export default function SignInPage() {
+  const formRef = useRef<HTMLDivElement>(null);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSignin = async () => {
+  useEffect(() => {
+    gsap.from(formRef.current, {
+      x: 120,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out",
+    });
+  }, []);
+
+  const handleLogin = async () => {
     const res = await fetch("/api/auth/signin", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      router.push("/");
-    } else {
-      alert(data.error);
-    }
+    if (res.ok) window.location.href = "/dashboard";
+    else alert("Login failed");
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="space-y-4 w-80">
-        <h1 className="text-2xl font-bold">Sign In</h1>
+    <div className="min-h-screen flex">
 
-        <Input
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+      {/* LEFT — Animation */}
+      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-cyan-500 to-blue-600">
+        <FloatingMedicines />
+      </div>
 
-        <Input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      {/* RIGHT — Form */}
+      <div className="flex w-full md:w-1/2 items-center justify-center bg-background">
 
-        <Button className="w-full" onClick={handleSignin}>
-          Login
-        </Button>
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link
-            href="/sign-up"
-            className="text-primary underline"
-          >
-            Sign Up
-          </Link>
-        </p>
+        <Card ref={formRef} className="w-[380px] shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">
+              Welcome Back
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label>Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <Button
+              onClick={handleLogin}
+              className="w-full"
+            >
+              Sign In
+            </Button>
+
+            <p className="text-sm text-center">
+              Don’t have an account?{" "}
+              <a href="/sign-up" className="underline">
+                Sign up
+              </a>
+            </p>
+
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
